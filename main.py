@@ -193,8 +193,8 @@ class Layer(QMainWindow):
             if Qt.Key_A <= e.key() <= Qt.Key_Z and e.modifiers() == Qt.NoModifier:
                 c = chr(e.key()).lower()
                 self.updateInput(self.input + c)
-        elif e.type() == QEvent.WindowDeactivate:
-            exit(0)
+        # elif e.type() == QEvent.WindowDeactivate:
+            # exit(0)
         return QMainWindow.event(self, e)
 
 
