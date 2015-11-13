@@ -127,7 +127,7 @@ class Layer(QMainWindow):
     def filterWindows(self):
         ret = []
         for w in self.winList:
-            if self._match_fuzzy(w['class']):
+            if self._match_fuzzy(w['class'] if not '.' in w['class'] else w['class'].split('.')[0]):
                 ret.append(w)
         for w in self.winList:
             if self._match_fuzzy(w['title']) and w not in ret:
@@ -146,13 +146,20 @@ class Layer(QMainWindow):
             win['class'] = ''
             win['title'] = ''
             for ch in w['title']:
-                ch = ch.lower()
-                if ch in self.input:
+                # ch = ch.lower()
+                if ch.lower() in self.input:
                     ch = '<span style="color: rgb(204, 140, 56)"><b>%s<b></span>' % ch
                 win['title'] += ch
-            for ch in w['class'].split('.')[1]:
-                ch = ch.lower()
-                if ch in self.input:
+            win['class'] = w['class'].split('.')
+            if win['class'][0].lower() == win['class'][1].lower():
+                win['class'] = win['class'][1].capitalize()
+            else:
+                win['class'] = win['class'][0].capitalize()
+            t = win['class'][:]
+            win['class'] = ''
+            for ch in t:
+                # ch = ch.lower()
+                if ch.lower() in self.input:
                     ch = '<span style="color: rgb(204, 140, 56)"><b>%s<b></span>' % ch
                 win['class'] += ch
             if i == self.cursor:
