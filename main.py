@@ -3,12 +3,27 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtDBus import *
 import sys
 import os
 import random
 import subprocess
 import re
 from functools import partial
+import fcntl
+import dbus
+
+app = QApplication(sys.argv)
+dbPath = 'org.shadow.QtDBus.Control'
+dbface = QDBusInterface(dbPath, '/')
+
+pid_file = 'program.pid'
+fp = open(pid_file, 'w')
+try:
+    fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except IOError:
+    dbface.call('nextItem')
+    sys.exit(0)
 
 CWD = os.path.split(sys.argv[0])[0]
 
@@ -61,6 +76,7 @@ class Layer(QMainWindow):
         self.indexKeys = []
         self.addIndexKeys()
 
+    @pyqtSlot(QDBusMessage)
     def nextItem(self):
         self.cursor += 1
         if self.cursor > len(self.filterWindows()):
@@ -204,8 +220,9 @@ def activateWindow(window):
     subprocess.check_output(['wmctrl', '-a', wid])
     exit()
 
-app = QApplication(sys.argv)
 layer = Layer()
+QDBusConnection.sessionBus().registerObject("/", layer, QDBusConnection.ExportAllSlots)
+QDBusConnection.sessionBus().registerService(dbPath)
 os.system('xdotool mousemove 800 600')
 layer.show()
 app.exec_()
