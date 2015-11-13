@@ -64,6 +64,7 @@ class Layer(QMainWindow):
             "Ctrl+W": self.clear,
             "Ctrl+C": self.clear,
             "Ctrl+J": self.action,
+            "Space": self.action,
             "Ctrl+N": self.nextItem,
             "Ctrl+P": self.prevItem,
             "Alt+Shift+Tab": self.prevItem,
@@ -192,6 +193,8 @@ class Layer(QMainWindow):
             if Qt.Key_A <= e.key() <= Qt.Key_Z and e.modifiers() == Qt.NoModifier:
                 c = chr(e.key()).lower()
                 self.updateInput(self.input + c)
+        elif e.type() == QEvent.WindowDeactivate:
+            exit(0)
         return QMainWindow.event(self, e)
 
 
