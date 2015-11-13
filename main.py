@@ -17,7 +17,7 @@ app = QApplication(sys.argv)
 dbPath = 'org.shadow.QtDBus.Control'
 dbface = QDBusInterface(dbPath, '/')
 
-pid_file = 'program.pid'
+pid_file = '/tmp/program.pid'
 fp = open(pid_file, 'w')
 try:
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
