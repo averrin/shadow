@@ -41,7 +41,7 @@ class Layer(QMainWindow):
             self.w, self.h
         )
         # self.setAttribute(Qt.WA_TranslucentBackground);
-        # self.setWindowFlags(Qt.FramelessWindowHint);
+        self.setWindowFlags(Qt.FramelessWindowHint)
         view = QGraphicsView(self)
         scene = QGraphicsScene()
         scene.setSceneRect(0, 0, self.w, self.h)
@@ -61,6 +61,7 @@ class Layer(QMainWindow):
 
         shortcuts = {
             "Ctrl+H": self.backspace,
+            "Backspace": self.backspace,
             "Ctrl+W": self.clear,
             "Ctrl+C": self.clear,
             "Ctrl+J": self.action,
@@ -118,7 +119,7 @@ class Layer(QMainWindow):
         winList = QGraphicsTextItem('')
         self.scene.addItem(winList)
         self.listWidget = winList
-        winList.setDefaultTextColor(QColor('#ccc'))
+        winList.setDefaultTextColor(QColor('#999'))
         winList.setFont(QFont('Fantasque Sans Mono', 11))
         winList.setHtml(self.getWindows())
         winList.setPos(20, 44)
@@ -139,7 +140,7 @@ class Layer(QMainWindow):
             win = w.copy()
             win['index'] = i+1 if i < 9 else '&nbsp;'
             if i == self.cursor:
-                win['index'] = '<span style="color: rgb(35, 157, 201)"><b>&gt; %d</b></span>' % win['index']
+                win['index'] = '<span style="color: rgb(35, 157, 201)"><b>| %d</b></span>' % win['index']
             else:
                 win['index'] = '&nbsp;&nbsp;%s' % win['index']
             win['class'] = ''
@@ -147,13 +148,18 @@ class Layer(QMainWindow):
             for ch in w['title']:
                 ch = ch.lower()
                 if ch in self.input:
-                    ch = '<span style="color: rgb(143, 116, 56)"><b>%s<b></span>' % ch
+                    ch = '<span style="color: rgb(204, 140, 56)"><b>%s<b></span>' % ch
                 win['title'] += ch
             for ch in w['class'].split('.')[1]:
                 ch = ch.lower()
                 if ch in self.input:
-                    ch = '<span style="color: rgb(143, 116, 56)"><b>%s<b></span>' % ch
+                    ch = '<span style="color: rgb(204, 140, 56)"><b>%s<b></span>' % ch
                 win['class'] += ch
+            if i == self.cursor:
+                win['class'] = '<span style="color: #eee">%s</span>' % win['class']
+                win['title'] = '<span style="color: #eee">%s</span>' % win['title']
+                win['desktop'] = '<span style="color: #eee">%s</span>' % win['desktop']
+
             ret.append('%(index)s [%(desktop)s] <b>%(class)s</b>&nbsp;&nbsp;&nbsp;%(title)s' % win)
         return '<br>'.join(ret)
 
@@ -190,7 +196,8 @@ class Layer(QMainWindow):
 
     def event(self, e):
         if e.type() == QEvent.KeyRelease:
-            if Qt.Key_A <= e.key() <= Qt.Key_Z and e.modifiers() == Qt.NoModifier:
+            if (Qt.Key_A <= e.key() <= Qt.Key_Z and
+            (e.modifiers() == Qt.NoModifier or e.modifiers() == Qt.ShiftModifier)):
                 c = chr(e.key()).lower()
                 self.updateInput(self.input + c)
         # elif e.type() == QEvent.WindowDeactivate:
