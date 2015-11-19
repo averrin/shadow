@@ -11,7 +11,7 @@ import subprocess
 import re
 from functools import partial
 import fcntl
-import dbus
+# import dbus
 
 app = QApplication(sys.argv)
 dbPath = 'org.shadow.QtDBus.Control'
@@ -32,8 +32,8 @@ class Layer(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setWindowTitle('Shadow')
-        self.w = 500
-        self.h = 300
+        self.w = 600
+        self.h = 250
         rec = QApplication.desktop().screenGeometry()
         self.setGeometry(
             rec.width()/2 - self.w/2,
@@ -64,8 +64,10 @@ class Layer(QMainWindow):
             "Backspace": self.backspace,
             "Ctrl+W": self.clear,
             "Ctrl+C": self.clear,
+            "Ctrl+X": self.kill,
             "Ctrl+J": self.action,
             "Space": self.action,
+            "Enter": self.action,
             "Ctrl+N": self.nextItem,
             "Ctrl+P": self.prevItem,
             "Alt+Shift+Tab": self.prevItem,
@@ -140,7 +142,7 @@ class Layer(QMainWindow):
             win = w.copy()
             win['index'] = i+1 if i < 9 else '&nbsp;'
             if i == self.cursor:
-                win['index'] = '<span style="color: rgb(35, 157, 201)"><b>| %d</b></span>' % win['index']
+                win['index'] = '<span style="color: rgb(35, 157, 201)"><b>| %s</b></span>' % win['index']
             else:
                 win['index'] = '&nbsp;&nbsp;%s' % win['index']
             win['class'] = ''
@@ -184,10 +186,10 @@ class Layer(QMainWindow):
             last_index = min(positions)
         return True
 
-    def updateInput(self, txt):
+    def updateInput(self, txt=None):
         if self.input != txt:
             self.cursor = 0
-            self.input = txt
+            self.input = txt if txt is not None else self.input
         t = '# %s' % self.input
         self.line.setPlainText(t)
         self.listWidget.setHtml(self.getWindows())
@@ -201,6 +203,13 @@ class Layer(QMainWindow):
         print(win)
         activateWindow(win)
 
+    def kill(self):
+        win = self.filterWindows()[self.cursor]
+        print(win)
+        closeWindow(win)
+        self.winList = listWindows()
+        self.updateInput()
+
     def event(self, e):
         if e.type() == QEvent.KeyRelease:
             if (Qt.Key_A <= e.key() <= Qt.Key_Z and
@@ -213,7 +222,7 @@ class Layer(QMainWindow):
 
 
 def listWindows():
-    exclude = ['yakuake.Yakuake', 'explorer.exe.Wine']
+    exclude = ['Shadow.main.py', 'yakuake.Yakuake', 'explorer.exe.Wine']
     l = subprocess.check_output(['wmctrl', '-lx'])
     windows = []
     for line in l.decode().split('\n'):
@@ -236,6 +245,12 @@ def activateWindow(window):
     wid = window['title']
     subprocess.check_output(['wmctrl', '-a', wid])
     exit()
+
+
+def closeWindow(window):
+    wid = window['title']
+    subprocess.check_output(['wmctrl', '-c', wid])
+
 
 layer = Layer()
 QDBusConnection.sessionBus().registerObject("/", layer, QDBusConnection.ExportAllSlots)
