@@ -114,6 +114,7 @@ class Layer(QMainWindow):
     def drawWin(self):
         self.scene.clear()
         t = '# %s' % self.input
+        self.scene.addRect(QRectF(0, 0, self.w, self.h), brush=QBrush(QColor('#232323')))
         inputText = self.scene.addText(t, QFont('Fantasque Sans Mono', 13))
         inputText.setDefaultTextColor(QColor('#ccc'))
         inputText.setPos(20, 20)
@@ -153,10 +154,13 @@ class Layer(QMainWindow):
                     ch = '<span style="color: rgb(204, 140, 56)"><b>%s<b></span>' % ch
                 win['title'] += ch
             win['class'] = w['class'].split('.')
-            if win['class'][0].lower() == win['class'][1].lower():
-                win['class'] = win['class'][1].capitalize()
+            if len(win['class']) > 1:
+                if win['class'][0].lower() == win['class'][1].lower():
+                    win['class'] = win['class'][1].capitalize()
+                else:
+                    win['class'] = win['class'][0].capitalize()
             else:
-                win['class'] = win['class'][0].capitalize()
+                win['class'] = win['class'][0]
             t = win['class'][:]
             win['class'] = ''
             for ch in t:
